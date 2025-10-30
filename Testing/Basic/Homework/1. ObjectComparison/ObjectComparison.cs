@@ -4,22 +4,20 @@ using NUnit.Framework.Legacy;
 using FluentAssertions.Equivalency;
 
 namespace HomeExercise.Tasks.ObjectComparison;
+
 public class ObjectComparison
 {
     [Test]
     [Description("Проверка текущего царя")]
-    public void CheckCurrentTsar()
+    public void CurrentTsar_Should_HaveExpectedProperties()
     {
         var actualTsar = TsarRegistry.GetCurrentTsar();
 
         var expectedTsar = new Person("Ivan IV The Terrible", 54, 170, 70,
             new Person("Vasili III of Russia", 28, 170, 60, null));
-        
-        actualTsar
-            .Should()
-            .BeEquivalentTo(expectedTsar, options =>
-                options.Excluding(info => IsPersonId(info)));
-        
+
+        AreEquivalent(actualTsar, expectedTsar);
+
         //Преимущества такой реализации:
         //-тест занимает меньше строк кода,
         //-добавление новых свойств не приводит к изменению теста (кроме самой инициализации expectedTsar),
@@ -32,12 +30,12 @@ public class ObjectComparison
     public void CheckCurrentTsar_WithCustomEquality()
     {
         var actualTsar = TsarRegistry.GetCurrentTsar();
-        
+
         var expectedTsar = new Person("Ivan IV The Terrible", 54, 170, 70,
             new Person("Vasili III of Russia", 28, 170, 60, null));
-        
+
         ClassicAssert.True(AreEqual(actualTsar, expectedTsar));
-        
+
         //Какие недостатки у такого подхода? 
         //Недостатки:
         //-линейный рост количества строк кода при добавлении новых свойств,
@@ -46,12 +44,20 @@ public class ObjectComparison
         //-при падении теста явно не указывается свойство, из-за которого тест падает.
     }
 
-    
+    private void AreEquivalent(Person actualTsar, Person expectedTsar)
+    {
+        actualTsar
+            .Should()
+            .BeEquivalentTo(expectedTsar, options =>
+                options.Excluding(info => IsPersonId(info)));
+    }
+
     private bool IsPersonId(IMemberInfo info)
     {
         return info.Name == nameof(Person.Id) &&
                info.DeclaringType == typeof(Person);
     }
+
     private bool AreEqual(Person? actual, Person? expected)
     {
         if (actual == expected) return true;
