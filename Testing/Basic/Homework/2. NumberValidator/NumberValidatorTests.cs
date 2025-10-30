@@ -47,7 +47,7 @@ public class NumberValidatorTests
     [TestCase(17, 0, true, "123", TestName = "Valid integer without scale part")]
     [TestCase(17, 2, true, "0000123.45", TestName = "Valid number with leading zeros")]
     [TestCase(17, 2, false, "-0", TestName = "Negative zero with onlyPositive=false")]
-    [TestCase(2, 0, false, "+0", TestName = "Negative zero with onlyPositive=true")]
+    [TestCase(2, 0, false, "+0", TestName = "Positive zero with onlyPositive=false")]
     public void IsValidNumber_Should_Return_True_When_Valid_Numbers(int precision, int scale, bool onlyPositive, string value)
     {
         var validator = new NumberValidator(precision, scale, onlyPositive);
@@ -76,8 +76,7 @@ public class NumberValidatorTests
     [TestCase(3, 0, false, " 1", TestName = "Space before the number")]
     [TestCase(3, 0, false, "1 ", TestName = "Space after the number")]
     [TestCase(3, 0, false, "1 1", TestName = "Space inside the number")]
-    public void IsValidNumber_Should_Return_False_When_Invalid_Numbers(int precision, int scale, bool onlyPositive,
-        string value)
+    public void IsValidNumber_Should_Return_False_When_Invalid_Numbers(int precision, int scale, bool onlyPositive, string value)
     {
         var validator = new NumberValidator(precision, scale, onlyPositive);
 
