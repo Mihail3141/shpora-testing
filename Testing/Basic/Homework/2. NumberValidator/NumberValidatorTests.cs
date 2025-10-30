@@ -26,7 +26,7 @@ public class NumberValidatorTests
     }
 
     [Test, TestCaseSource(nameof(InvalidConstructorParameters))]
-    public void Constructor_Should_ReturnThrow_WhenInvalidParameters(int precision, int scale, bool onlyPositive)
+    public void Constructor_Should_Throw_ArgumentException_When_Invalid_Parameters(int precision, int scale, bool onlyPositive)
     {
         var action = () => new NumberValidator(precision, scale, onlyPositive);
 
@@ -34,19 +34,21 @@ public class NumberValidatorTests
     }
 
     [TestCase(10, 5, true, TestName = "Valid positive number")]
-    public void ConstructorShould_ReturnNotThrow_WhenValidParameters(int precision, int scale, bool onlyPositive)
+    public void Constructor_Should_NotThrow_When_Valid_Parameters(int precision, int scale, bool onlyPositive)
     {
         var action = () => new NumberValidator(precision, scale, onlyPositive);
 
         action.Should().NotThrow();
     }
-    
+
     [TestCase(17, 2, true, "+123.45", TestName = "Valid positive number with plus sign")]
     [TestCase(17, 2, false, "-123.45", TestName = "Valid negative number with minus sign")]
     [TestCase(17, 2, false, "123,45", TestName = "Valid number with with ',' between integer and scale parts")]
     [TestCase(17, 0, true, "123", TestName = "Valid integer without scale part")]
     [TestCase(17, 2, true, "0000123.45", TestName = "Valid number with leading zeros")]
-    public void IsValidNumberShould_ReturnTrue_WhenValidNumbers(int precision, int scale, bool onlyPositive, string value)
+    [TestCase(17, 2, false, "-0", TestName = "Negative zero with onlyPositive=false")]
+    [TestCase(2, 0, false, "+0", TestName = "Negative zero with onlyPositive=true")]
+    public void IsValidNumber_Should_Return_True_When_Valid_Numbers(int precision, int scale, bool onlyPositive, string value)
     {
         var validator = new NumberValidator(precision, scale, onlyPositive);
 
@@ -55,7 +57,6 @@ public class NumberValidatorTests
         actualResult.Should().BeTrue();
     }
 
-    [Test]
     [TestCase(17, 2, true, "1.2.3", TestName = "multiple dots")]
     [TestCase(17, 2, true, "--123", TestName = "double minus")]
     [TestCase(17, 2, true, "++123", TestName = "double plus")]
@@ -67,7 +68,16 @@ public class NumberValidatorTests
     [TestCase(17, 2, true, "1234.", TestName = "Trailing dot without fractional part")]
     [TestCase(17, 2, false, ".12", TestName = "Leading dot without integer part")]
     [TestCase(17, 2, true, "-123", TestName = "Negative number with onlyPositive=true")]
-    public void IsValidNumberShould_ReturnFalse_WhenInvalidNumbers(int precision, int scale, bool onlyPositive, string value)
+    [TestCase(17, 0, true, "-0", TestName = "Negative zero with onlyPositive=true")]
+    [TestCase(1, 0, false, "+0", TestName = "Positive zero with precision 1")]
+    [TestCase(1, 0, false, "", TestName = "Empty string")]
+    [TestCase(1, 0, false, null, TestName = "Null string")]
+    [TestCase(3, 0, false, "a", TestName = "Not a number")]
+    [TestCase(3, 0, false, " 1", TestName = "Space before the number")]
+    [TestCase(3, 0, false, "1 ", TestName = "Space after the number")]
+    [TestCase(3, 0, false, "1 1", TestName = "Space inside the number")]
+    public void IsValidNumber_Should_Return_False_When_Invalid_Numbers(int precision, int scale, bool onlyPositive,
+        string value)
     {
         var validator = new NumberValidator(precision, scale, onlyPositive);
 
