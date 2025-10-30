@@ -1,13 +1,13 @@
 ﻿using FluentAssertions;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
+using FluentAssertions.Equivalency;
 
 namespace HomeExercise.Tasks.ObjectComparison;
 public class ObjectComparison
 {
     [Test]
     [Description("Проверка текущего царя")]
-    [Category("ToRefactor")]
     public void CheckCurrentTsar()
     {
         var actualTsar = TsarRegistry.GetCurrentTsar();
@@ -17,8 +17,8 @@ public class ObjectComparison
         
         actualTsar
             .Should()
-            .BeEquivalentTo(expectedTsar, options => options
-            .ExcludingMembersNamed("Id"));
+            .BeEquivalentTo(expectedTsar, options =>
+                options.Excluding(info => IsPersonId(info)));
         
         //Преимущества такой реализации:
         //-тест занимает меньше строк кода,
@@ -46,6 +46,12 @@ public class ObjectComparison
         //-при падении теста явно не указывается свойство, из-за которого тест падает.
     }
 
+    
+    private bool IsPersonId(IMemberInfo info)
+    {
+        return info.Name == nameof(Person.Id) &&
+               info.DeclaringType == typeof(Person);
+    }
     private bool AreEqual(Person? actual, Person? expected)
     {
         if (actual == expected) return true;
